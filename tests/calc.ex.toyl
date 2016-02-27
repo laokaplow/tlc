@@ -1,0 +1,9 @@
+let a = b
+let f = fn b, c, d -> c
+let b = f (1, 2, 3)
+
+let a = b
+let f a b c = b + c
+let double x = x * 2
+let d = double
+d 1 d 2
