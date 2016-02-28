@@ -21,7 +21,7 @@ COMPILE = $(CXX) $(CXXFLAGS) #$(DEBUGFLAGS)
 
 
 ###
-## project structure
+## build vars
 #
 SRCS := $(wildcard src/*.cpp)
 INCLUDE_DIRS = src vendor
@@ -30,40 +30,41 @@ CLEAN_LIST = $(OUTPUT_DIRS)
 
 TARGET := bin/tlc
 
-# include subcomponents
-include src/parse/subdir.mk
-include tests/subdir.mk
 
 ###
 ## Rules
 #
-.PHONY: all program clean
+.PHONY: all program test clean example
 
 all: program
+
+program: $(TARGET)
 
 clean:
 	rm -rf $(CLEAN_LIST)
 
-program: $(TARGET)
-
-ddd:
-	@echo $(PARSER_OBJECTS)
+# include subcomponents
+COMPONENTS = ast parse
+include $(COMPONENTS:%=src/%/subdir.mk)
 
 # build the main executeable
-$(TARGET): $(addprefix  build/src/, main.o ast/ast.o ast/location.o) $(PARSER_OBJECTS)
+$(TARGET): $(addprefix  build/src/, main.o) $(AST_OBJS) $(PARSER_OBJS)
 	@mkdir -p $(@D) # ensure output directory exists
 	$(COMPILE) -o $@ $^
+
+example: $(TARGET)
+		$(TARGET) < tests/declaration.toyl | jsonpp
+
+
+###
+## auto-dependencies
+#
 
 # build object and dependency files
 build/%.o : %.cpp build/%.d
 	@#echo ">>" building $@ from $^
 	@mkdir -p $(@D) # ensure output directory exists
 	$(COMPILE) $(DEPFLAGS) -c -o $@ $<
-
-
-###
-## auto-dependencies
-#
 
 # dependency files are created alongside object files
 build/%.d: ;
