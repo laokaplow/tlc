@@ -9,11 +9,7 @@
 
 /* call yylex with a location */
 %locations
-%initial-action
-{
-  // Initialize the initial location.
-  @$.begin.filename = @$.end.filename = nullptr;
-};
+%define api.location.type { AST::Location }
 
 /* increase usefulness of error messages and assert correct cleanup */
 %define parse.error verbose
@@ -52,14 +48,16 @@
   #include <string>
 
   #include "ast/ast.h"
-  #include "location.hh"
+  #include "ast/location.h"
   #include <iostream>
 
   namespace GENERATED {
     class Scanner;
   };
-
-
+  
+  #ifndef YY_NULLPTR
+  #define YY_NULLPTR nullptr
+  #endif
 }
 
 /* inserted near top of source file */
@@ -75,6 +73,7 @@
   // inform bison how the parser show call lex
   #undef yylex
   #define yylex scanner.lex
+
 
   // helper function for forwarding map literals
   map<string, Node::Ptr> _(initializer_list<pair<const string, Node::Ptr>> i) {

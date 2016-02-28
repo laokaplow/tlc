@@ -16,14 +16,23 @@
 
   // before executing an action, set the length of the location from
   // the length of the matched pattern:
-  #define YY_USER_ACTION loc.columns(YYLeng());
+  #define YY_USER_ACTION location.end.column += YYLeng();
 
   #define YYSTR std::string(YYText(), YYLeng())
   #define NEW_NODE(s) AST::make<AST::Literal>(s)
-  #define DEBUG(msg) /*std::cerr << "Found: " << msg << std::endl;*/
+  #define DEBUG(msg) //std::cerr << "Found: " << msg << " @ " << location << std::endl;
 
-  // #define YIELD(tok) return GENERATED::Parser::make_##tok(NEW_NODE(YYSTR), YYLOC);
-  #define YIELD(tok) return GENERATED::Parser::make_##tok(AST::make<AST::Literal>(""), loc);
+#define YIELD(tok)                                                             \
+  {                                                                            \
+    DEBUG(YYSTR)                                                               \
+    return GENERATED::Parser::make_##tok(NEW_NODE(YYSTR), location);           \
+  }
+#define SKIP(thing)                                                            \
+  {                                                                            \
+    DEBUG(#thing + YYSTR)                                                      \
+    location.step();                                                           \
+  }
+
 %}
 
 %%
@@ -31,26 +40,26 @@
 %{
   // code run each time before lex is called
   /*before matching any pattern, update the the current location*/
-  loc.step();
+  location.begin = location.end; // advance past last location
 %}
 
-"let"                          YIELD(LET)
-[a-zA-Z]([_\-]?[a-zA-Z0-9])*   YIELD(NAME)
-"="                            YIELD(EQ)
-"+"                            YIELD(OP)
-[0-9]+                         YIELD(NUM)
-";"                            YIELD(SEMI)
+"let"                           YIELD(LET)
+[a-zA-Z]([_\-]?[a-zA-Z0-9])*    YIELD(NAME)
+"="                             YIELD(EQ)
+"+"                             YIELD(OP)
+[0-9]+                          YIELD(NUM)
+";"                             YIELD(SEMI)
 
-"//".*$                        {/* eat comments */}
-[ \t]                          {/* eat whitespace */}
+"//".*$                         SKIP(comments)
+[ \t]                           SKIP(whitespace)
 
-\n                             loc.lines(1);
+\n                              location.new_line();
 
                                 /* forward everything else, even invalid
                                  * tokens - making use of bison's automatic
                                  * error messages */
 .                               YIELD(UNKNOWN)
-<<EOF>> return GENERATED::Parser::make_END(loc);
+<<EOF>> return GENERATED::Parser::make_END(location);
 
 %%
 

@@ -50,7 +50,7 @@ ddd:
 	@echo $(PARSER_OBJECTS)
 
 # build the main executeable
-$(TARGET): $(addprefix  build/src/, main.o ast/ast.o) $(PARSER_OBJECTS)
+$(TARGET): $(addprefix  build/src/, main.o ast/ast.o ast/location.o) $(PARSER_OBJECTS)
 	@mkdir -p $(@D) # ensure output directory exists
 	$(COMPILE) -o $@ $^
 

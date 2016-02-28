@@ -3,7 +3,7 @@
 #include <vector>
 #include <iostream>
 
-#include "ast.h"
+#include "ast/ast.h"
 
 using namespace std;
 using namespace AST;
