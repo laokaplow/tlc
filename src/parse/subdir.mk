@@ -13,16 +13,19 @@ $(GEN_DIR):
 
 FLEX_OUTPUT := $(addprefix $(GEN_DIR), scanner.cxx scanner.hxx)
 BISON_OUTPUT := $(addprefix $(GEN_DIR), parser.cxx parser.hxx position.hh location.hh stack.hh)
-PARSER_INTERMEDIATE := $(addprefix build/$(GEN_DIR), parser.o scanner.o)
 
-build/$(GEN_DIR)%.o: $(addprefix $(GEN_DIR), %.cxx %.hxx) # src/ast.h ??
+# must manually specify dependencies on generated headers
+build/$(PARSE_DIR)parse.o: $(addprefix $(GEN_DIR), scanner.hxx parser.hxx)
+
+# some object files are built from generated sources
+build/%.o: %.cxx build/%.d
 		@mkdir -p $(@D)
 		$(COMPILE) -c -o $@ $<
 
 .INTERMEDIATE: .RUN.flex .RUN.bison
 
 $(FLEX_OUTPUT): .RUN.flex;
-.RUN.flex: $(PARSE_DIR)scanner.l $(PARSE_DIR)scanner.h | $(GEN_DIR)
+.RUN.flex: $(PARSE_DIR)scanner.l | $(GEN_DIR)
 	flex --outfile="$(GEN_DIR)scanner.cxx" --header-file="$(GEN_DIR)scanner.hxx" $<
 
 $(BISON_OUTPUT): .RUN.bison;
