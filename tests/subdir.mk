@@ -1,12 +1,11 @@
 
-bin/test_runner: test_runner.cpp vendor/catch.hpp | bin
-	$(COMPILE) $< -o $@
+TEST_RUNNER = bin/test_runner
+TEST_DIR = tests/
 
-# todo, handwritten tests, dynamic tests
-# better dependency management
+.PHONY: test
+test: $(TARGET)
+	$(TARGET) < tests/declaration.toyl | jsonpp
 
-# specific test runners that ensure freshness of code / tests
-
-# cached test results?
-
-CLEAN_LIST += ...?
+bin/test_runner: $(TEST_DIR)test_runner.cpp vendor/catch.hpp
+	@mkdir -p $(@D)
+	$(COMPILE) -o $@ $<
