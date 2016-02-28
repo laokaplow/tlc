@@ -19,7 +19,7 @@ std::string stringify(std::istream &in) {
 
 AST::Node::Ptr parse(std::istream &in) {
   AST::Node::Ptr res;
-  GENERATED::Scanner scanner(in);
+  GENERATED::Scanner scanner(&in);
   GENERATED::Parser parser(scanner, res);
 
   if (!parser.parse()) {
