@@ -1,17 +1,21 @@
 ###
 ## make settings
 #
+
+# don't worry about ordering of rules
 .DEFAULT_GOAL = all
-.SUFFIXES: # disables most default rules
-.SECONDEXPANSION: # allow prereqs to reference targets
+# disable (most) default rules
+.SUFFIXES:
+# allow prereqs to reference targets
+.SECONDEXPANSION:
 
 
 ###
 ## compilation settings
 #
 CXX = clang++
-CXXFLAGS = -std=c++14 -Wall -Werror -pedantic $(INCLUDE_DIRS:%,-I%)
 DEPFLAGS = -MMD -MP
+CXXFLAGS = -std=c++14 -Wall -Werror -pedantic $(INCLUDE_DIRS:%=-I%)
 DEBUGFLAGS = -g -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls
 COMPILE = $(CXX) $(CXXFLAGS) $(DEPFLAGS)  #$(DEBUGFLAGS)
 
@@ -20,33 +24,38 @@ COMPILE = $(CXX) $(CXXFLAGS) $(DEPFLAGS)  #$(DEBUGFLAGS)
 ## project structure
 #
 SRCS := $(wildcard src/*.cpp)
-
 INCLUDE_DIRS = src vendor
 OUTPUT_DIRS = build bin
+CLEAN_LIST = $(OUTPUT_DIRS)
+
+TARGET := bin/tlc
+
+# include subcomponents
+include src/parser.mk
 
 
 ###
-## rules
+## Rules
 #
 .PHONY: all program clean
 
 all: program
-program: bin/tlc
+
+clean:
+	rm -rf $(CLEAN_LIST)
+
+program: $(TARGET)
 
 # build the main executeable
-bin/tlc: $(addprefix  build/src/, main.o)
+$(TARGET): $(addprefix  build/src/, main.o ast.o) $(PARSER_OBJECTS)
 	@mkdir -p $(@D) # ensure output directory exists
-	$(COMPILE) $^ -o $@
+	$(COMPILE) -o $@ $^
 
 # build object and dependency files
 build/%.o : %.cpp
-	@echo building $@ from "<" $^ ">"
+	@echo ">>" building $@ from $^
 	@mkdir -p $(@D) # ensure output directory exists
-	$(COMPILE) $< -c -o $@
-
-clean:
-	rm -rf $(OUTPUT_DIRS)
-
+	$(COMPILE) -c -o $@ $<
 
 ###
 ## auto-dependencies
