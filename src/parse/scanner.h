@@ -2,7 +2,7 @@
 #define SCANNER_H_
 
 // I want to remove this dependecy, equivalent to yy.tab.h ?
-#include "GENERATED/parser.hxx"
+#include "parse/GENERATED/parser.hxx"
 
 
 #undef yyFlexLexer // ugly hack, because <FlexLexer> is wonky

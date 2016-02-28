@@ -1,15 +1,15 @@
 #ifndef PARSE_H_
 #define PARSE_H_
 
-#include "ast.h"
+#include "ast/ast.h"
 #include <iostream>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 
-#include "GENERATED/parser.hxx"
-#include "GENERATED/scanner.hxx"
-#include "scanner.h"
+#include "parse/GENERATED/parser.hxx"
+#include "parse/GENERATED/scanner.hxx"
+#include "parse/scanner.h"
 
 std::string stringify(std::istream &in) {
   std::stringstream buffer;

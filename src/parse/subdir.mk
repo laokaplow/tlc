@@ -2,7 +2,7 @@
 ## Parser makefile
 #
 
-PARSE_DIR:= src/
+PARSE_DIR:= src/parse/
 GEN_DIR:= $(PARSE_DIR)GENERATED/
 PARSER_OBJECTS = $(addprefix build/, $(PARSE_DIR)parse.o $(addprefix $(GEN_DIR), parser.o scanner.o))
 

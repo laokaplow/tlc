@@ -27,7 +27,7 @@
 %define api.token.prefix {T_}
 /* Tokens */
 %token
-   END 0 "end of file"
+  END 0 "end of file"
   <AST::Literal::Ptr>   LET
   <AST::Literal::Ptr>   NAME
   <AST::Literal::Ptr>   OP
@@ -51,7 +51,7 @@
   #include <stdexcept>
   #include <string>
 
-  #include "ast.h"
+  #include "ast/ast.h"
   #include "location.hh"
   #include <iostream>
 
@@ -64,7 +64,7 @@
 
 /* inserted near top of source file */
 %code {
-  #include "scanner.h"
+  #include "parse/scanner.h"
   #include <map>
 
   using namespace AST;

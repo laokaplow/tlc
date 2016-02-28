@@ -7,8 +7,8 @@
 */
 
 %{
-  #include "parser.hxx" // equivalent of yy.tab.h
-  #include "scanner.h"
+  #include "parse/GENERATED/parser.hxx" // equivalent of yy.tab.h
+  #include "parse/scanner.h"
   #include <cstdlib>
   #include <iostream>
   #include <stdexcept>

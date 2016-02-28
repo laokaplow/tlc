@@ -31,7 +31,7 @@ CLEAN_LIST = $(OUTPUT_DIRS)
 TARGET := bin/tlc
 
 # include subcomponents
-include src/parser.mk
+include src/parse/subdir.mk
 
 
 ###
@@ -46,8 +46,11 @@ clean:
 
 program: $(TARGET)
 
+ddd:
+	@echo $(PARSER_OBJECTS)
+
 # build the main executeable
-$(TARGET): $(addprefix  build/src/, main.o ast.o) $(PARSER_OBJECTS)
+$(TARGET): src/main.cpp $(addprefix  build/src/, ast/ast.o) $(PARSER_OBJECTS)
 	@mkdir -p $(@D) # ensure output directory exists
 	$(COMPILE) -o $@ $^
 
