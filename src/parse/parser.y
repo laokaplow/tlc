@@ -9,6 +9,11 @@
 
 /* call yylex with a location */
 %locations
+%initial-action
+{
+  // Initialize the initial location.
+  @$.begin.filename = @$.end.filename = nullptr;
+};
 
 /* increase usefulness of error messages and assert correct cleanup */
 %define parse.error verbose
@@ -18,12 +23,7 @@
 %define parser_class_name {Parser}
 %define api.value.type variant
 
-/* TODO: implement the following
 %define api.token.constructor
-  more info at
-    http://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols
-*/
-
 %define api.token.prefix {T_}
 /* Tokens */
 %token

@@ -1,5 +1,6 @@
 %option c++ 8bit warn nodefault
-/* %option yylineno ?*/
+%option yylineno
+%option yyclass = "GENERATED::Scanner"
 
 /*
   must not enable %option noyywrap, otherwise flex will emit duplicate
@@ -13,28 +14,24 @@
   #include <iostream>
   #include <stdexcept>
 
-// before executing an action, set the length of the location from
-// the length of the matched pattern:
-#define YY_USER_ACTION yylloc->columns(YYLeng());
+  // before executing an action, set the length of the location from
+  // the length of the matched pattern:
+  #define YY_USER_ACTION loc.columns(YYLeng());
 
-#define YYSTR std::string(YYText(), YYLeng())
-#define NEW_NODE(s) AST::make<AST::Literal>(s))
-#define RET(x) return Parser::token::T_##x
-#define 🌀 std::cout << ">>> this is a test\n";
-#define DEBUG(msg) /*std::cerr << "Found: " << msg << std::endl;*/
+  #define YYSTR std::string(YYText(), YYLeng())
+  #define NEW_NODE(s) AST::make<AST::Literal>(s)
+  #define DEBUG(msg) /*std::cerr << "Found: " << msg << std::endl;*/
 
-#define YIELD(tok)                                                             \
-  {                                                                            \
-    DEBUG(YYSTR)                                                               \
-    yylval->build<AST::Literal::Ptr>(NEW_NODE(YYSTR);                          \
-    RET(tok);                                                                  \
-  }
+  // #define YIELD(tok) return GENERATED::Parser::make_##tok(NEW_NODE(YYSTR), YYLOC);
+  #define YIELD(tok) return GENERATED::Parser::make_##tok(AST::make<AST::Literal>(""), loc);
 %}
 
 %%
 
-%{ // before matching any pattern, update the the current location
-  yylloc->step();
+%{
+  // code run each time before lex is called
+  /*before matching any pattern, update the the current location*/
+  loc.step();
 %}
 
 "let"                          YIELD(LET)
@@ -47,12 +44,13 @@
 "//".*$                        {/* eat comments */}
 [ \t]                          {/* eat whitespace */}
 
-\n                             yylloc->lines(1);
+\n                             loc.lines(1);
 
                                 /* forward everything else, even invalid
                                  * tokens - making use of bison's automatic
                                  * error messages */
 .                               YIELD(UNKNOWN)
+<<EOF>> return GENERATED::Parser::make_END(loc);
 
 %%
 
@@ -61,7 +59,3 @@
 // The following must be defined manually to prevent linker errors:
 GENERATED::Scanner::Scanner(std::istream *in, std::ostream *out) : yyFlexLexer(in, out) {}
 int yyFlexLexer::yywrap() { return 1; }
-int yyFlexLexer::yylex() {
-  throw std::logic_error(
-      "The yylex() exists for technical reasons and must not be used.");
-}

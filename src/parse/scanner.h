@@ -12,19 +12,15 @@
 
 // Tell flex how to define lexing fn
 #undef YY_DECL
-#define YY_DECL                                                                \
-  int GENERATED::Scanner::lex(GENERATED::Parser::semantic_type *yylval,        \
-                              GENERATED::Parser::location_type *yylloc)
-// #define YY_DECL GENERATED::Parser::symbol_type GENERATED::Scanner::lex()
+#define YY_DECL GENERATED::Parser::symbol_type GENERATED::Scanner::lex()
 
 namespace GENERATED {
 class Scanner : public yyFlexLexer {
 public:
   explicit Scanner(std::istream *in = nullptr, std::ostream *out = nullptr);
-  int lex(GENERATED::Parser::semantic_type *yylval,
-          GENERATED::Parser::location_type *yylloc);
-  // Parser::symbol_type lex();
+  Parser::symbol_type lex();
+  Parser::location_type loc;
 };
 }
 
-#endif // include-guard
+#endif
