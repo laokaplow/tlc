@@ -44,11 +44,11 @@ clean:
 	rm -rf $(CLEAN_LIST)
 
 # include subcomponents
-COMPONENTS = ast parse
+COMPONENTS = parse
 include $(COMPONENTS:%=src/%/subdir.mk)
 
 # build the main executeable
-$(TARGET): $(addprefix  build/src/, main.o) $(AST_OBJS) $(PARSER_OBJS)
+$(TARGET): $(addprefix  build/src/, main.o) $(AST_OBJS) $(PARSE_OBJS)
 	@mkdir -p $(@D) # ensure output directory exists
 	$(COMPILE) -o $@ $^
 

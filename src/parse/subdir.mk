@@ -1,6 +1,8 @@
 PARSE_DIR := src/parse/
 GEN_DIR = $(PARSE_DIR)GENERATED/
-PARSER_OBJS := $(addprefix build/, $(PARSE_DIR)parse.o $(addprefix $(GEN_DIR), parser.o scanner.o))
+
+PARSE_SRCS = $(wildcard $(PARSE_DIR)*.cpp)
+PARSE_OBJS = $(addprefix build/,  $(PARSE_SRCS:%.cpp=%.o) $(addprefix $(GEN_DIR), parser.o scanner.o))
 
 CLEAN_LIST += $(GEN_DIR)
 

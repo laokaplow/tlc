@@ -1,10 +1,10 @@
 #ifndef PARSE_H_
 #define PARSE_H_
 
-#include "ast/ast.h"
+#include "parse/tree.h"
 #include <istream>
 
-using ParseResult = AST::Node::Ptr;
+using ParseResult = Parse::Tree::Node::Ptr;
 
 ParseResult parse(std::istream &in);
 

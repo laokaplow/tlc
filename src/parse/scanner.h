@@ -3,7 +3,7 @@
 
 // I want to remove this dependecy, equivalent to yy.tab.h ?
 #include "parse/GENERATED/parser.hxx"
-#include "ast/location.h"
+#include "parse/location.h"
 
 
 #undef yyFlexLexer // ugly hack, because <FlexLexer> is wonky
@@ -20,7 +20,7 @@ class Scanner : public yyFlexLexer {
 public:
   explicit Scanner(std::istream *in = nullptr, std::ostream *out = nullptr);
   Parser::symbol_type lex();
-  AST::Location location;
+  Parse::Location location;
 };
 }
 

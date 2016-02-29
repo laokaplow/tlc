@@ -19,7 +19,7 @@
   #define YY_USER_ACTION location.end.column += YYLeng();
 
   #define YYSTR std::string(YYText(), YYLeng())
-  #define NEW_NODE(s) AST::make<AST::Literal>(s)
+  #define NEW_NODE(s) Parse::Tree::make<Parse::Tree::Node::Literal>(s)
   #define DEBUG(msg) //std::cerr << "Found: " << msg << " @ " << location << std::endl;
 
 #define YIELD(tok)                                                             \

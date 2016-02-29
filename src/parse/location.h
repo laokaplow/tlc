@@ -1,9 +1,9 @@
-#ifndef AST_LOCATION_H_
-#define AST_LOCATION_H_
+#ifndef PARSE_LOCATION_H_
+#define PARSE_LOCATION_H_
 
 #include <iostream>
 
-namespace AST {
+namespace Parse {
 
 struct Location {
 

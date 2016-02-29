@@ -1,7 +1,7 @@
-#include "ast/location.h"
+#include "parse/location.h"
 #include <iostream>
 
-namespace AST {
+namespace Parse {
 
 using namespace std;
 

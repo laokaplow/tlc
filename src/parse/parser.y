@@ -5,11 +5,11 @@
 %require "3.0.4"
 
 /* add parser members (and associated constructor parameters) */
-%parse-param {GENERATED::Scanner &scanner} {AST::Node::Ptr &ast}
+%parse-param {GENERATED::Scanner &scanner} {Parse::Tree::Node::Ptr &ast}
 
 /* call yylex with a location */
 %locations
-%define api.location.type { AST::Location }
+%define api.location.type { Parse::Location }
 
 /* increase usefulness of error messages and assert correct cleanup */
 %define parse.error verbose
@@ -24,18 +24,18 @@
 /* Tokens */
 %token
   END 0 "end of file"
-  <AST::Literal::Ptr>   LET
-  <AST::Literal::Ptr>   NAME
-  <AST::Literal::Ptr>   OP
-  <AST::Literal::Ptr>   EQ "="
-  <AST::Literal::Ptr>   NUM
-  <AST::Literal::Ptr>   SEMI ";"
-  <AST::Literal::Ptr>   UNKNOWN
+  <Parse::Tree::Node::Literal::Ptr>   LET
+  <Parse::Tree::Node::Literal::Ptr>   NAME
+  <Parse::Tree::Node::Literal::Ptr>   OP
+  <Parse::Tree::Node::Literal::Ptr>   EQ "="
+  <Parse::Tree::Node::Literal::Ptr>   NUM
+  <Parse::Tree::Node::Literal::Ptr>   SEMI ";"
+  <Parse::Tree::Node::Literal::Ptr>   UNKNOWN
 ;
 
-%type  <AST::List::Ptr>       declarations
-%type  <AST::Node::Ptr>       declaration
-%type  <AST::Node::Ptr>       expr
+%type  <Parse::Tree::Node::Sequence::Ptr>       declarations
+%type  <Parse::Tree::Node::Object::Ptr>         declaration
+%type  <Parse::Tree::Node::Object::Ptr>         expr
 
 
 %printer { yyoutput << $$; } <*>;
@@ -47,14 +47,14 @@
   #include <stdexcept>
   #include <string>
 
-  #include "ast/ast.h"
-  #include "ast/location.h"
+  #include "parse/tree.h"
+  #include "parse/location.h"
   #include <iostream>
 
   namespace GENERATED {
     class Scanner;
   };
-  
+
   #ifndef YY_NULLPTR
   #define YY_NULLPTR nullptr
   #endif
@@ -65,7 +65,7 @@
   #include "parse/scanner.h"
   #include <map>
 
-  using namespace AST;
+  using namespace Parse::Tree;
   const bool PARSE_SUCCESS = true;
 
   using namespace std;
@@ -79,6 +79,8 @@
   map<string, Node::Ptr> _(initializer_list<pair<const string, Node::Ptr>> i) {
     return i;
   }
+
+  #define O(...) make<Parse::Tree::Node::Object>(_({__VA_ARGS__}))
 }
 
 /* TODO: write special macro expander for this file
@@ -115,18 +117,19 @@
 program : declarations { ast = $declarations; return PARSE_SUCCESS; }
 
 declarations
-  : %empty                          { $$ = make<List>(); }
+  : %empty                          { $$ = make<Node::Sequence>(); }
   | declarations[list] declaration  { $$ = $list->append($declaration); }
 
 declaration
-  : LET NAME "=" expr ";"           { $$ = make<Branch>(_({{"name", $NAME}, {"expr", $expr}})); }
+  : LET NAME "=" expr ";"           { $$ = O({"name", $NAME}, {"expr", $expr}); }
   /*: LET NAME "=" expr ";"           { $$ = 🌀(Branch, {"name", $NAME}, {"expr", $expr}); }*/
-  | error ";"                       { $$ = make<Error<Branch>>("invalid declaration"); /* should look into yyclearin and yyerrorok macros for clean error recovery */}
+  /*| error ";"                       { $$ = make<Error<Branch>>("invalid declaration"); }*/
+   /*should look into yyclearin and yyerrorok macros for clean error recovery */
   ;
 
 expr
-  : expr[lhs] OP NUM[rhs]           { $$ = make_shared<Branch>(_({{"lhs", $lhs}, {"op", $OP}, {"rhs", $rhs}})); }
-  | NUM                             { $$ = $NUM; }
+  : expr[lhs] OP NUM[rhs]           { $$ = O({"lhs", $lhs}, {"op", $OP}, {"rhs", $rhs}); }
+  | NUM                             { $$ = O({"value",$NUM}); }
   ;
 
 
