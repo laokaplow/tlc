@@ -54,7 +54,7 @@ $(TARGET): $(addprefix  build/src/, main.o) $(AST_OBJS) $(PARSE_OBJS)
 	$(COMPILE) -o $@ $^
 
 example: $(TARGET)
-		$(TARGET) < tests/declaration.toyl | jsonpp
+		$(TARGET) < tests/calc.example.toyl | jsonpp
 
 
 ###

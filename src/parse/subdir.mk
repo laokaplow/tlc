@@ -33,4 +33,4 @@ $(FLEX_OUTPUT): .RUN.flex;
 
 $(BISON_OUTPUT): .RUN.bison;
 .RUN.bison: $(PARSE_DIR)parser.y | $(GEN_DIR)
-	bison --output="$(GEN_DIR)parser.cxx" --defines="$(GEN_DIR)parser.hxx" $<
+	bison --warnings=all -Werror --verbose --output="$(GEN_DIR)parser.cxx" --defines="$(GEN_DIR)parser.hxx" $<

@@ -26,17 +26,48 @@
   END 0 "end of file"
   <Parse::Tree::Node::Literal::Ptr>   LET
   <Parse::Tree::Node::Literal::Ptr>   NAME
-  <Parse::Tree::Node::Literal::Ptr>   OP
-  <Parse::Tree::Node::Literal::Ptr>   EQ "="
-  <Parse::Tree::Node::Literal::Ptr>   NUM
-  <Parse::Tree::Node::Literal::Ptr>   SEMI ";"
+  <Parse::Tree::Node::Literal::Ptr>   NUMBER
+  <Parse::Tree::Node::Literal::Ptr>   LAMBDA      "λ"
+  <Parse::Tree::Node::Literal::Ptr>   EQ          "="
+  <Parse::Tree::Node::Literal::Ptr>   COMMA       ","
+  <Parse::Tree::Node::Literal::Ptr>   COLON       ":"
+  <Parse::Tree::Node::Literal::Ptr>   SEMICOLON   ";"
+  <Parse::Tree::Node::Literal::Ptr>   OPEN_PAREN  "("
+  <Parse::Tree::Node::Literal::Ptr>   CLOSE_PAREN ")"
+  <Parse::Tree::Node::Literal::Ptr>   OPEN_CURLY  "{"
+  <Parse::Tree::Node::Literal::Ptr>   CLOSE_CURLY "}"
+  <Parse::Tree::Node::Literal::Ptr>   RIGHT_ARROW "->"
+  <Parse::Tree::Node::Literal::Ptr>   LEFT_ARROW  "<-"
+  <Parse::Tree::Node::Literal::Ptr>   PLUS        "+"
+  <Parse::Tree::Node::Literal::Ptr>   STAR        "*"
+
   <Parse::Tree::Node::Literal::Ptr>   UNKNOWN
+  <Parse::Tree::Node::Literal::Ptr>   FFF
 ;
 
 %type  <Parse::Tree::Node::Sequence::Ptr>       declarations
+%type  <Parse::Tree::Node::Sequence::Ptr>       scope
+%type  <Parse::Tree::Node::Sequence::Ptr>       statements optional_statements
+%type  <Parse::Tree::Node::Sequence::Ptr>       type_specifiers optional_type_specifiers
+%type  <Parse::Tree::Node::Sequence::Ptr>       args optional_args
+%type  <Parse::Tree::Node::Sequence::Ptr>       parameters optional_parameters
+
 %type  <Parse::Tree::Node::Ptr>                 declaration
 %type  <Parse::Tree::Node::Ptr>                 expr
+%type  <Parse::Tree::Node::Ptr>                 statement
+%type  <Parse::Tree::Node::Ptr>                 infix_expr
+%type  <Parse::Tree::Node::Ptr>                 arg
+%type  <Parse::Tree::Node::Ptr>                 function_call
+%type  <Parse::Tree::Node::Ptr>                 type_specifier
+%type  <Parse::Tree::Node::Ptr>                 function_type_specifier
+%type  <Parse::Tree::Node::Ptr>                 function_literal
+%type  <Parse::Tree::Node::Ptr>                 optional_initilization
+%type  <Parse::Tree::Node::Ptr>                 optional_type_specifier
+%type  <Parse::Tree::Node::Ptr>                 var_decl
+%type  <Parse::Tree::Node::Ptr>                 literal
 
+%left "+"
+%precedence "("
 
 %printer { yyoutput << $$; } <*>;
 
@@ -80,36 +111,17 @@
     return i;
   }
 
-  #define O(...) make<Parse::Tree::Node::Object>(_({__VA_ARGS__}))
+  #define O(...) \
+  make<Parse::Tree::Node::Object>(_({__VA_ARGS__}))
+  #define TYPESPEC(x) {"type", make<}
+  #define Q(typename, ...) \
+  make<Parse::Tree::Node::Object>(_({{"type", make<Node::Literal>(#typename)}, __VA_ARGS__}))
+
+  /*
+    TODO: look into using error in rules
+      should look into yyclearin and yyerrorok macros for clean error recovery
+  */
 }
-
-/* TODO: write special macro expander for this file
-  turn (|໑|→|🌀) NodeType(val1, name2=val2, ...)
-  into { $$ = make_unique<NodeType>(@$, {{"val1", $val1}, {"name2", $val2}, ...}); }
-
-  could use unicode left-arrow as symbol
-
-  or even better, write one to automatically generate bison.y file from nicer, custom EBNF-like DSL
-  can integrate with json library and/or dump json
-    can be integrated/verified with/by json_schema
-
-  // example of preproccessor syntax
-  declarations :
-    : %empty                          → List()
-    | declarations[self] declaration  → List(self, declaration)
-
-  declaration
-    : LET NAME "=" expr ";"           → (name=NAME, expr)
-    | error ";"                       → ("invalid declaration")
-    ;
-
-  expr
-    : NUM[lhs] OP NUM[rhs]            → (lhs, op=OP, rhs)
-    | NUM                             → Literal(NUM)
-    ;
-
-    declarations = declaration{1:2, glue=','}
-*/
 
 %% // Grammar section
 
@@ -119,18 +131,115 @@ program : declarations { ast = $declarations; return PARSE_SUCCESS; }
 declarations
   : %empty                          { $$ = make<Node::Sequence>(); }
   | declarations[list] declaration  { $$ = $list->append($declaration); }
+  ;
 
 declaration
-  : LET NAME "=" expr ";"           { $$ = O({"name", $NAME}, {"expr", $expr}); }
-  /*| error ";"                       { $$ = make<Error<Branch>>("invalid declaration"); }*/
-   /*should look into yyclearin and yyerrorok macros for clean error recovery */
+  : LET var_decl ";"                { $$ = $var_decl; }
+  ;
+
+var_decl
+  : NAME ":" optional_type_specifier optional_initilization       { $$ = Q(declaration, {"type_spec", $3}, {"init",$4}); }
+  ;
+
+optional_type_specifier
+  : %empty                          { $$ = O(); }
+  | type_specifier
+  ;
+
+optional_initilization
+  : %empty                          { $$ = O(); }
+  | "=" expr                        { $$ = $expr; }
   ;
 
 expr
-  : expr[lhs] OP NUM[rhs]           { $$ = O({"lhs", $lhs}, {"op", $OP}, {"rhs", $rhs}); }
-  | NUM                             { $$ = $NUM; }
+  : NAME                          { $$ = O(); }
+  | literal                       { $$ = O(); }
+  | "(" expr ")"                  { $$ = O(); }
+  | infix_expr                    { $$ = O(); }
+  | function_call                 { $$ = O(); }
   ;
 
+infix_expr
+  : expr "+" expr                 { $$ = O(); }
+  ;
+
+literal
+  : NUMBER                  { $$ = O(); }
+  | function_literal        { $$ = O(); }
+  ;
+
+function_literal
+  : LAMBDA "(" optional_parameters ")" "->" "{" optional_statements "}"       { $$ = O(); }
+  ;
+
+optional_parameters
+  : %empty                            { $$ = make<Node::Sequence>(); }
+  | parameters                        { $$ = make<Node::Sequence>(); }
+  ;
+
+parameters
+  : NAME ":" type_specifier            { $$ = make<Node::Sequence>(); }
+  | parameters "," var_decl            { $$ = make<Node::Sequence>(); }
+  ;
+
+type_specifier
+  : NAME                          { $$ = O(); }
+  | function_type_specifier       { $$ = O(); }
+  ;
+
+function_type_specifier
+  : LAMBDA "(" optional_type_specifiers ")" "->" type_specifier { $$ = O(); }
+  ;
+
+optional_type_specifiers
+  : %empty                      { $$ = make<Node::Sequence>(); }
+  | type_specifiers             { $$ = make<Node::Sequence>(); }
+  ;
+
+type_specifiers
+  : type_specifier                      { $$ = make<Node::Sequence>(); }
+  | type_specifiers "," type_specifier  { $$ = make<Node::Sequence>(); }
+  ;
+
+function_call
+  : expr "(" optional_args ")"          { $$ = O(); }
+  ;
+
+optional_args
+  : %empty              { $$ = make<Node::Sequence>(); }
+  | args                { $$ = make<Node::Sequence>(); }
+  ;
+
+args
+  : arg                      { $$ = make<Node::Sequence>(); }
+  | args[list] "," arg       { $$ = make<Node::Sequence>(); }
+  ;
+
+arg
+  : NAME "=" expr       { $$ = O(); }
+  ;
+
+optional_statements
+  : %empty                    { $$ = make<Node::Sequence>(); }
+  | statements                { $$ = make<Node::Sequence>(); }
+  ;
+
+statements
+  : statement                   { $$ = make<Node::Sequence>(); }
+  | statements statement        { $$ = make<Node::Sequence>(); }
+  ;
+
+statement
+  : NAME "<-" expr ";"       { $$ = O(); }
+  | expr "->" NAME ";"       { $$ = O(); }
+  | function_call ";"        { $$ = O(); }
+  | declaration              { $$ = O(); }
+  | scope                    { $$ = O(); }
+  ;
+
+scope
+  : "{" optional_statements "}"  { $$ = make<Node::Sequence>(); }
+  ;
 
 %%
 
