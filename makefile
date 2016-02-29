@@ -24,6 +24,7 @@ COMPILE = $(CXX) $(CXXFLAGS) #$(DEBUGFLAGS)
 ## build vars
 #
 SRCS := $(wildcard src/*.cpp)
+DEP_FILES = $(SRCS:%.cpp=build/%.d)
 INCLUDE_DIRS = src vendor
 OUTPUT_DIRS = build bin
 CLEAN_LIST = $(OUTPUT_DIRS)
@@ -71,4 +72,4 @@ build/%.d: ;
 .PRECIOUS: build/%.d # don't delete dependency files
 
 # must include these last
--include $(SRCS:%.cpp=build/%.d)
+-include $(DEP_FILES:%.cpp=build/%.d)

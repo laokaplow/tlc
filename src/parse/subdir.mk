@@ -4,6 +4,7 @@ GEN_DIR = $(PARSE_DIR)GENERATED/
 PARSE_SRCS = $(wildcard $(PARSE_DIR)*.cpp)
 PARSE_OBJS = $(addprefix build/,  $(PARSE_SRCS:%.cpp=%.o) $(addprefix $(GEN_DIR), parser.o scanner.o))
 
+DEP_FILES  += $(PARSE_OBJS:%.o=%.d)
 CLEAN_LIST += $(GEN_DIR)
 
 FLEX_OUTPUT := $(addprefix $(GEN_DIR), scanner.cxx scanner.hxx)
@@ -22,7 +23,7 @@ build/$(PARSE_DIR)parse.o: $(addprefix $(GEN_DIR), scanner.hxx parser.hxx)
 # some object files are built from generated sources
 build/%.o: %.cxx build/%.d
 		@mkdir -p $(@D)
-		$(COMPILE) -c -o $@ $<
+		$(COMPILE) $(DEPFLAGS) -c -o $@ $<
 
 .INTERMEDIATE: .RUN.flex .RUN.bison
 
