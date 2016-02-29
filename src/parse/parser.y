@@ -34,8 +34,8 @@
 ;
 
 %type  <Parse::Tree::Node::Sequence::Ptr>       declarations
-%type  <Parse::Tree::Node::Object::Ptr>         declaration
-%type  <Parse::Tree::Node::Object::Ptr>         expr
+%type  <Parse::Tree::Node::Ptr>                 declaration
+%type  <Parse::Tree::Node::Ptr>                 expr
 
 
 %printer { yyoutput << $$; } <*>;
@@ -122,14 +122,13 @@ declarations
 
 declaration
   : LET NAME "=" expr ";"           { $$ = O({"name", $NAME}, {"expr", $expr}); }
-  /*: LET NAME "=" expr ";"           { $$ = 🌀(Branch, {"name", $NAME}, {"expr", $expr}); }*/
   /*| error ";"                       { $$ = make<Error<Branch>>("invalid declaration"); }*/
    /*should look into yyclearin and yyerrorok macros for clean error recovery */
   ;
 
 expr
   : expr[lhs] OP NUM[rhs]           { $$ = O({"lhs", $lhs}, {"op", $OP}, {"rhs", $rhs}); }
-  | NUM                             { $$ = O({"value",$NUM}); }
+  | NUM                             { $$ = $NUM; }
   ;
 
 
@@ -137,6 +136,6 @@ expr
 
 void GENERATED::Parser::error(const Parser::location_type& loc, const std::string& msg)
 {
-    cout << "Error:" << msg << "\n";
-    //throw Parser::syntax_error(loc, msg);
+    //cerr << "Error:" << msg << "\n";
+    throw syntax_error(loc, msg);
 }
