@@ -4,6 +4,8 @@
 #include "ast/ast.h"
 #include <istream>
 
-AST::Node::Ptr parse(std::istream &in);
+using ParseResult = AST::Node::Ptr;
+
+ParseResult parse(std::istream &in);
 
 #endif

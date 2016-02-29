@@ -2,19 +2,12 @@
 
 #include "parse/GENERATED/parser.hxx"
 #include "scanner.h"
-#include <sstream>
 #include <stdexcept>
 
 using namespace std;
 
-string stringify(istream &in) {
-  stringstream buffer;
-  buffer << in.rdbuf();
-  return buffer.str();
-}
-
-AST::Node::Ptr parse(std::istream &in) {
-  AST::Node::Ptr res;
+ParseResult parse(std::istream &in) {
+  ParseResult res;
   GENERATED::Scanner scanner(&in);
   GENERATED::Parser parser(scanner, res);
 
