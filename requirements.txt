@@ -1,5 +1,17 @@
-# this project is built with the following tools:
+# this project is built with the following tools and versions:
+
+$ make --version
 GNU Make 3.81
-GNU Bison 3.0.4
+
+$ bison --version
+bison (GNU Bison) 3.0.4
+
+$ flex --version
 flex 2.6.0
-clang-700.1.81
+
+$ clang --version
+Apple LLVM version 7.0.2 (clang-700.1.81)
+Target: x86_64-apple-darwin14.5.0
+Thread model: posix
+
+$ jsonpp
